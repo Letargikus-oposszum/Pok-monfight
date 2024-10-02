@@ -77,7 +77,7 @@ namespace pokefos
             }
             if (temporaryDefenderHP <= 0)
             {
-                Console.WriteLine($"The defender ({defenderData.Name}) has been killed by the attacker ({attackerData.Name})");
+                Console.WriteLine($"The defender ({defenderData.Name}) has been killed by the attacker ({attackerData.Name}) using these three moves: ({helperMoveWithDamages[0].MoveName},{helperMoveWithDamages[1].MoveName},{helperMoveWithDamages[2].MoveName})");
             }
             else
             {
