@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -8,7 +10,7 @@ namespace pokefos
     {
         private static readonly HttpClient httpClient = new HttpClient();
 
-        // Fetch Pokemon data from API
+        // Fetch Pokémon data from API
         public async Task<PokemonData> GetPokemonAsync(string pokemonNameOrId)
         {
             var url = $"https://pokeapi.co/api/v2/pokemon/{pokemonNameOrId.ToLower()}";
@@ -17,35 +19,70 @@ namespace pokefos
             return pokemonData;
         }
 
-        public async Task ChosenPokemonAsync(int apid, int dpid, Pokemon[] pokemon, List<MoveTypeInfo> StatusMove, List<MoveTypeInfo> DmgMove)
+        // Display Pokémon moves and store them in a list
+        public async Task<List<MoveWithDamage>> DisplayPokemonMovesAsync(int apid, int dpid, Pokemon[] pokemon)
         {
-            string AttackerPokemonName = pokemon[apid].Name;
-            string DefenderPokemonName = pokemon[dpid].Name;
+            List<MoveWithDamage> attackerMovesWithDamage = new List<MoveWithDamage>();
 
-            // Fetch data for both attacker and defender Pokémon
-            PokemonData attackerPokemonData = await GetPokemonAsync(AttackerPokemonName);
-            PokemonData defenderPokemonData = await GetPokemonAsync(DefenderPokemonName);
+            // Get attacker Pokémon
+            string attackerName = pokemon[apid].Name;
+            PokemonData attackerData = await GetPokemonAsync(attackerName);
 
-            List<PokemonMove> attackerPokemonMoves = attackerPokemonData.Moves;
-            var attackerPokemonMove = attackerPokemonMoves[apid + 1].Move;
-            var attackerPokemonmoveName = attackerPokemonMove.Name;
-
-            MoveDetail moveDetail = await GetMoveDetailsAsync(attackerPokemonmoveName);
-            if (moveDetail.DamageClass.DmgClassName == "status")
+            foreach (var move in attackerData.Moves)
             {
-                StatusMove.Add(moveDetail.DamageClass);
+                // Generate random damage for each move
+                int randomDamage = new Random().Next(10, 101); // Random damage between 10 and 100
+
+                // Create a MoveWithDamage object
+                MoveWithDamage moveWithDamage = new MoveWithDamage
+                {
+                    MoveName = move.Move.Name,
+                    Damage = randomDamage
+                };
+
+                // Add to the list of moves with damage
+                attackerMovesWithDamage.Add(moveWithDamage);
+            }
+
+            string defenderName = pokemon[dpid].Name;
+            PokemonData defenderData = await GetPokemonAsync(defenderName);
+
+            foreach (var move in defenderData.Moves)
+            {
+                // Generate random damage for each move
+                int randomDamage = new Random().Next(10, 101); // Random damage between 10 and 100
+            }
+            
+            Console.WriteLine($"Attacker: {attackerName} Defender: {defenderName}");
+
+
+            // Return the list of moves with damage for the attacker
+            return attackerMovesWithDamage;
+        }
+        public void Attack(List<MoveWithDamage> attackerMovesWithDamage, PokemonData attackerData, PokemonData defenderData)
+        {
+            List<MoveWithDamage> helperMoveWithDamages = new List<MoveWithDamage>();
+            Random random = new Random();
+            for (int i = 0; i < 3; i++)
+            {
+                int randIndex = random.Next(0, attackerMovesWithDamage.Count()-1);  
+                helperMoveWithDamages.Add(attackerMovesWithDamage[randIndex]);
+            }
+            int helperIndex = 0;
+            int temporaryDefenderHP = 0;
+            for (int i = 0;i < helperMoveWithDamages.Count;i++)
+            {
+                temporaryDefenderHP = defenderData.HP - attackerData.Moves[helperIndex].Move.Power;
+                helperIndex += 1;
+            }
+            if (temporaryDefenderHP <= 0)
+            {
+                Console.WriteLine($"The defender ({defenderData.Name}) has been killed by the attacker ({attackerData.Name})");
             }
             else
             {
-                DmgMove.Add(moveDetail.DamageClass);
+                Console.WriteLine($"Defender won with the remaining health of: {temporaryDefenderHP}");
             }
-        }
-        public async Task<MoveDetail> GetMoveDetailsAsync(string moveName)
-        {
-            var url = $"https://pokeapi.co/api/v2/move/{moveName.ToLower()}";
-            var response = await httpClient.GetStringAsync(url);
-            var moveDetail = JsonConvert.DeserializeObject<MoveDetail>(response);
-            return moveDetail;
         }
     }
 }

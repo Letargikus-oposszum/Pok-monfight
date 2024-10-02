@@ -1,4 +1,7 @@
-﻿namespace pokefos
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace pokefos
 {
     public class PokemonMove
     {
@@ -7,7 +10,9 @@
 
     public class MoveInfo
     {
-        public string Name { get; set; }
+        public int Id { get; set; } // Add ID
+        public string Name { get; set; } // Move name
+        public int Power { get; set; } // Move power, if available
     }
 
     public class PokemonStat
@@ -25,6 +30,10 @@
     {
         public string Name { get; set; }
         public List<PokemonStat> Stats { get; set; }
-        public List<PokemonMove> Moves { get; set; }
+
+        // Property to get HP
+        public int HP => Stats.FirstOrDefault(stat => stat.Stat.Name.ToLower() == "hp")?.BaseStat ?? 0;
+
+        public List<PokemonMove> Moves { get; set; } // List of moves
     }
 }
