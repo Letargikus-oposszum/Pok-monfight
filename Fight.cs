@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
+﻿using pokefos;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace pokefos
+public class Fight
 {
-    public class Fight 
-    {
-        public int Id { get; set; }
-        public PokemonData Attacker{ get; set; }
-        public PokemonData Defender { get; set; }
-        public string Date { get; set; } = DateTime.Now.ToString();
-}
+    public int Id { get; set; }
+
+    // Use ForeignKey attribute to specify the FK relationship
+    [ForeignKey("Attacker")]
+    public int AttackerId { get; set; } // Make this an int property
+    public PokemonData Attacker { get; set; }
+
+    [ForeignKey("Defender")]
+    public int DefenderId { get; set; } // Make this an int property
+    public PokemonData Defender { get; set; }
+
+    public string Date { get; set; } = DateTime.Now.ToString();
 }

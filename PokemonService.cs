@@ -31,7 +31,7 @@ namespace pokefos
             foreach (var move in attackerData.Moves)
             {
                 // Generate random damage for each move
-                int randomDamage = new Random().Next(10, 51); // Random damage between 10 and 100
+                int randomDamage = new Random().Next(10, 20); // Random damage between 10 and 100
 
                 // Create a MoveWithDamage object
                 MoveWithDamage moveWithDamage = new MoveWithDamage
@@ -47,11 +47,6 @@ namespace pokefos
             string defenderName = pokemon[dpid].Name;
             PokemonData defenderData = await GetPokemonAsync(defenderName);
 
-            foreach (var move in defenderData.Moves)
-            {
-                // Generate random damage for each move
-                int randomDamage = new Random().Next(10, 101); // Random damage between 10 and 100
-            }
 
             Console.WriteLine($"Attacker: {attackerName} Defender: {defenderName}");
             attackerData.Type = "Attacker";
@@ -67,43 +62,42 @@ namespace pokefos
         {
             List<MoveWithDamage> helperMoveWithDamages = new List<MoveWithDamage>();
             Random random = new Random();
+
+            // Randomly select 3 moves from the attacker
             for (int i = 0; i < 3; i++)
             {
-                int randIndex = random.Next(0, attackerMovesWithDamage.Count() - 1);
+                int randIndex = random.Next(0, attackerMovesWithDamage.Count);
                 helperMoveWithDamages.Add(attackerMovesWithDamage[randIndex]);
             }
 
-            int helperIndex = 0;
-            int temporaryDefenderHP = 0;
+            int temporaryDefenderHP = defenderData.HP;
 
-
-
-            for (int i = 0; i < helperMoveWithDamages.Count; i++)
+            foreach (var moveWithDamage in helperMoveWithDamages)
             {
-                temporaryDefenderHP = defenderData.HP - attackerData.Moves[helperIndex].Move.Power;
-                helperIndex += 1;
+                temporaryDefenderHP -= moveWithDamage.Damage; // Use random damage from moves
                 fightround.Attacks += 1;
 
                 if (temporaryDefenderHP <= 0)
                 {
-                    Console.WriteLine($"The defender ({defenderData.Name}) has been knocked out by the attacker ({attackerData.Name}) using these three moves: " +
-                    $"({helperMoveWithDamages[0].MoveName}," +
-                    $"{helperMoveWithDamages[1].MoveName}," +
-                    $"{helperMoveWithDamages[2].MoveName})");
+                    Console.WriteLine($"The defender ({defenderData.Name}) has been knocked out by the attacker ({attackerData.Name}) using these moves: " +
+                    $"{Environment.NewLine}- {helperMoveWithDamages[0].MoveName}," +
+                    $"{Environment.NewLine}- {helperMoveWithDamages[1].MoveName}," +
+                    $"{Environment.NewLine}- {helperMoveWithDamages[2].MoveName}");
                     fightround.FightState = "Lost";
-                    break;
+                    break; // Exit if defender is knocked out
                 }
-
-                else if (temporaryDefenderHP >= 0 && helperIndex == 2)
-                {
-                    Console.WriteLine($"Defender won with the remaining health of: {temporaryDefenderHP}");
-                    fightround.FightState = "Won";
-                    break;
-                }
-
-                fightround.RemainingHP = temporaryDefenderHP;
-                DB.SaveChanges();
             }
+
+            // If the loop completes and the defender is still alive
+            if (temporaryDefenderHP > 0)
+            {
+                Console.WriteLine($"Defender ({defenderData.Name}) survived with remaining health: {temporaryDefenderHP}");
+                fightround.RemainingHP = temporaryDefenderHP; // Save remaining health
+                fightround.FightState = "Won"; // This might need to be a different state
+            }
+
+            DB.SaveChanges();
         }
     }
 }
+

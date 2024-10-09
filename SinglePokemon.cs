@@ -22,7 +22,7 @@ namespace pokefos
     public class PokemonStat
     {
         public int Id { get; set; }
-        public int BaseStat { get; set; }
+        public int Base_Stat { get; set; }
         public StatInfo Stat { get; set; }
     }
 
@@ -40,7 +40,7 @@ namespace pokefos
 
         public string Type;
         // Property to get HP
-        public int HP => Stats.FirstOrDefault(stat => stat.Stat.Name.ToLower() == "hp")?.BaseStat ?? 0;
+        public int HP => Stats.FirstOrDefault(stat => stat.Stat.Name.ToLower() == "hp")?.Base_Stat ?? 100;
 
         public List<PokemonMove> Moves { get; set; } // List of moves
     }
